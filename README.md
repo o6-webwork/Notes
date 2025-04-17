@@ -93,7 +93,7 @@ messages = [
 print(llm.invoke(messages).content)
 ```
 
-### B. Official `openai` Library
+### B. Official `OpenAI` Library
 
 ```python
 import openai
