@@ -76,6 +76,7 @@ services:
       "--model", "/mnt/model/",
 
       # ─────────────────── Required arguments ───────────────────
+      "--served-model-name", "<model-name>",               # required: label model for reference
       "--max-model-len", "<max-model-len>",                # required
 
       # ─────────────────── Optional arguments ───────────────────
@@ -90,6 +91,7 @@ services:
 | `<model-directory-path-on-dgx>` ⚙ | Host path containing the **model weights**. |
 | `<host-port>` ⚙ | Port on the host machine that will be forwarded to **8000** in the container. |
 | `<cuda-visible-devices>` ⚙ | Sets **which GPUs the container can access** via `NVIDIA_VISIBLE_DEVICES`. Example: `0,1,2`. |
+| `<model-name>` ⚙ | Define and label the model name for easy referencing |
 | `<max-model-len>` ⚙ | *Maximum* number of tokens (prompt + generation) allowed per request. |
 | `<tp-size>` 🛈 | **Tensor‑parallel size**—how many *visible* GPUs vLLM should split the model across. Must be ≤ the number of GPUs in `<cuda-visible-devices>`. |
 | `<gpu-mem-utilization>` 🛈 | Fraction (0–1) of each GPU’s memory vLLM will use for *KV cache* + weights. |
@@ -137,6 +139,7 @@ services:
     command: [
       "--model", "/mnt/model/",
       "--max-model-len", "16000",                 # allow up to 16 k tokens per request
+      "--served-model-name", "QwQ-32B",           # the model name is labelled as "QwQ-32B"
       "--tensor-parallel-size", "3",              # shard model across 3 GPUs
       "--gpu-memory-utilization", "0.9"           # use 90 % of each GPU’s memory
     ]
