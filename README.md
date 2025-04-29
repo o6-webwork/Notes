@@ -55,6 +55,31 @@ export GPU_MEM_UTIL=0.90
 docker run -d   --gpus all   --name $CONTAINER_NAME   -v ~/.cache/huggingface:/root/.cache/huggingface   -p $HOST_PORT:8000   --ipc=host   vllm/vllm-openai:latest   --model $MODEL_ID   --max-model-len $MAX_LEN   --gpu-memory-utilization $GPU_MEM_UTIL
 ```
 
+### Using Docker Compose
+
+```
+version: "3.8"
+
+services:
+    vllm:
+        container_name: <container-name>
+        image: vllm/vllm-openai:latest
+        runtime: nvidia
+        ipc: host
+        volumes:
+         - <model-directory-path-on-dgx>:/mnt/model/
+         - /home/dsta/.cache/hugging-face:/root/.cache/huggingface
+        ports:
+         - "<host-port>:8000"
+        environment:
+         - NVIDIA_VISIBLE_DEVICES=<devices-used>
+        command: [
+         "--model", "/mnt/model/",
+         "--max-model-len", "<max-model-len>"
+         "--gpu-memory-utilization", "<gpu-mem-utilization>",
+        ]
+```
+
 *View logs with `docker logs -f my-mistral-server`.*
 
 ---
