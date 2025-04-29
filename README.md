@@ -98,21 +98,21 @@ version: "3.8"
 
 services:
     vllm:
-        container_name: vllm-qwq
+        container_name: my-mistral-server
         image: vllm/vllm-openai:latest
         runtime: nvidia
         ipc: host
         volumes:
-         - /home/dsta/Desktop/QwQ-32B:/mnt/model/
+         - /home/dsta/Desktop/mistralai/Mistral-7B-Instruct-v0.1:/mnt/model/
          - /home/dsta/.cache/hugging-face:/root/.cache/huggingface
         ports:
-         - "1999:8000"
+         - "8000:8000"
         environment:
          - NVIDIA_VISIBLE_DEVICES=1,2,3
         command: [
          "--model", "/mnt/model/",
-         "--max-model-len", "16000"
-         "--gpu-memory-utilization", "0.9",
+         "--max-model-len", "4096"
+         "--gpu-memory-utilization", "0.90",
         ]
 ```
 
