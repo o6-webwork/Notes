@@ -98,7 +98,7 @@ version: "3.8"
 
 services:
     vllm:
-        container_name: <vllm-qwq>
+        container_name: vllm-qwq
         image: vllm/vllm-openai:latest
         runtime: nvidia
         ipc: host
