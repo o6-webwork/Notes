@@ -77,10 +77,10 @@ services:
 
       # ─────────────────── Required arguments ───────────────────
       "--served-model-name", "<model-name>",               # required: label model for reference
-      "--max-model-len", "<max-model-len>",                # required
+      "--max-model-len", "<max-model-len>",                # required: maximum number of tokens allowed
 
       # ─────────────────── Optional arguments ───────────────────
-      "--tensor-parallel-size", "<tp-size>",               # optional: shards model across GPUs
+      "--tensor-parallel-size", "<tp-size>",               # optional: shares model across GPUs
       "--gpu-memory-utilization", "<gpu-mem-utilization>", # optional: 0 < value ≤ 1
     ]
 ```
