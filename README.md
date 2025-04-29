@@ -57,7 +57,7 @@ docker run -d   --gpus all   --name $CONTAINER_NAME   -v ~/.cache/huggingface:/r
 
 ### Using Docker Compose (*`docker-compose.yml`*)
 
-```
+```bash
 version: "3.8"
 
 services:
@@ -93,7 +93,7 @@ services:
 
 ### Concrete example
 
-```
+```bash
 version: "3.8"
 
 services:
