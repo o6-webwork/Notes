@@ -54,71 +54,96 @@ export GPU_MEM_UTIL=0.90
 
 docker run -d   --gpus all   --name $CONTAINER_NAME   -v ~/.cache/huggingface:/root/.cache/huggingface   -p $HOST_PORT:8000   --ipc=host   vllm/vllm-openai:latest   --model $MODEL_ID   --max-model-len $MAX_LEN   --gpu-memory-utilization $GPU_MEM_UTIL
 ```
+### Using Docker Compose (`docker-compose.yml`)
 
-### Using Docker Compose (*`docker-compose.yml`*)
-
-```bash
-version: "3.8"
-
+```yaml
 services:
-    vllm:
-        container_name: <container-name>
-        image: vllm/vllm-openai:latest
-        runtime: nvidia
-        ipc: host
-        volumes:
-         - <model-directory-path-on-dgx>:/mnt/model/
-         - /home/dsta/.cache/hugging-face:/root/.cache/huggingface
-        ports:
-         - "<host-port>:8000"
-        environment:
-         - NVIDIA_VISIBLE_DEVICES=<devices-used>
-        command: [
-         "--model", "/mnt/model/",
-         "--max-model-len", "<max-model-len>"
-         "--gpu-memory-utilization", "<gpu-mem-utilization>",
-        ]
+  vllm:
+    container_name: <container-name>
+    image: vllm/vllm-openai:latest
+    runtime: nvidia
+    ipc: host
+    volumes:
+      - <model-directory-path-on-dgx>:/mnt/model/
+      - /home/dsta/.cache/hugging-face:/root/.cache/huggingface
+    ports:
+      - "<host-port>:8000"
+    environment:
+      # Comma-separated list of GPUs you want this container to *see*.
+      # vLLM will only be able to use these GPUs.
+      - NVIDIA_VISIBLE_DEVICES=<cuda-visible-devices>   # e.g. 0,1,2
+    command: [
+      "--model", "/mnt/model/",
+
+      # ─────────────────── Required arguments ───────────────────
+      "--max-model-len", "<max-model-len>",                # required
+
+      # ─────────────────── Optional arguments ───────────────────
+      "--tensor-parallel-size", "<tp-size>",               # optional: shards model across GPUs
+      "--gpu-memory-utilization", "<gpu-mem-utilization>", # optional: 0 < value ≤ 1
+    ]
 ```
 
-**Change elements in docker-compose** 
+| Element (⚙ = *required*, 🛈 = *optional*) | Purpose / Notes |
+|-------------------------------------------|-----------------|
+| `<container-name>` ⚙ | Name of the Docker container. |
+| `<model-directory-path-on-dgx>` ⚙ | Host path containing the **model weights**. |
+| `<host-port>` ⚙ | Port on the host machine that will be forwarded to **8000** in the container. |
+| `<cuda-visible-devices>` ⚙ | Sets **which GPUs the container can access** via `NVIDIA_VISIBLE_DEVICES`. Example: `0,1,2`. |
+| `<max-model-len>` ⚙ | *Maximum* number of tokens (prompt + generation) allowed per request. |
+| `<tp-size>` 🛈 | **Tensor‑parallel size**—how many *visible* GPUs vLLM should split the model across. Must be ≤ the number of GPUs in `<cuda-visible-devices>`. |
+| `<gpu-mem-utilization>` 🛈 | Fraction (0–1) of each GPU’s memory vLLM will use for *KV cache* + weights. |
 
-| Elements to be changed | Purpose |
-|------------------------|---------|
-| `<container-name>` | Name of Docker container |
-| `<model-directory-path-on-dgx>` | The file path of your model on the machine's directory |
-| `<host-port>` | The port where the model will be locally hosted on |
-| `<devices-used>` | Number of GPUs used, eg. `0,1,2` |
-| `<max-model-len>` | The maximum number of tokens the model inputs and outputs |
-| `<gpu-mem-utilization>` | Proportion of GPU usage |
+---
+
+#### CUDA‑visible devices vs. Tensor Parallel size
+
+* **`NVIDIA_VISIBLE_DEVICES` (CUDA‑visible devices)** simply tells the container “these are the GPUs you may use.”  
+* **`--tensor-parallel-size`** tells **vLLM** how many of the *visible* GPUs to shard the model across.  
+  *Example*: If `NVIDIA_VISIBLE_DEVICES=0,1,2,3` but `--tensor-parallel-size 2`, vLLM will load the model on GPUs **0 & 1 only**.
+
+---
+
+#### `--gpu-memory-utilization` and the KV cache
+
+* **KV cache** holds each layer’s *key* and *value* tensors for tokens that have already been processed, enabling fast autoregressive generation.  
+* vLLM estimates **how many “cache slots” (tokens × layers) can fit** based on:
+  1. **Model weights** (fixed memory cost).  
+  2. The memory budget you allow for everything else—primarily the KV cache.
+* `--gpu-memory-utilization <fraction>` sets the **upper bound** of total GPU memory vLLM may allocate.  
+  * High value (e.g., `0.9`) ⇒ **larger KV cache** ⇒ longer contexts / more parallel requests, but less head‑room for other processes.  
+  * Low value (e.g., `0.7`) ⇒ smaller cache, but frees memory for monitoring tools, other containers, etc.
+
+Monitor memory usage with `docker logs -f <container-name>` and adjust accordingly.
+
+---
 
 ### Concrete example
 
-```bash
-version: "3.8"
-
+```yaml
 services:
-    vllm:
-        container_name: my-mistral-server
-        image: vllm/vllm-openai:latest
-        runtime: nvidia
-        ipc: host
-        volumes:
-         - /home/dsta/mistralai/Mistral-7B-Instruct-v0.1:/mnt/model/
-         - /home/dsta/.cache/hugging-face:/root/.cache/huggingface
-        ports:
-         - "8000:8000"
-        environment:
-         - NVIDIA_VISIBLE_DEVICES=1,2,3
-        command: [
-         "--model", "/mnt/model/",
-         "--max-model-len", "4096"
-         "--gpu-memory-utilization", "0.90",
-        ]
+  vllm:
+    container_name: vllm-qwq
+    image: vllm/vllm-openai:latest
+    runtime: nvidia
+    ipc: host
+    volumes:
+      - /home/otb/Desktop/QwQ-32B:/mnt/model/
+      - /home/otb/.cache/hugging-face:/root/.cache/huggingface
+    ports:
+      - "1999:8000"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=1,2,3              # use GPUs 1–3 on the host
+    command: [
+      "--model", "/mnt/model/",
+      "--max-model-len", "16000",                 # allow up to 16 k tokens per request
+      "--tensor-parallel-size", "3",              # shard model across 3 GPUs
+      "--gpu-memory-utilization", "0.9"           # use 90 % of each GPU’s memory
+    ]
 ```
 
-*View logs with `docker logs -f my-mistral-server`.*
-
----
+In this setup, a **32‑billion‑parameter model** stored at `/home/otb/Desktop/QwQ-32B` is served locally on **http://localhost:1999**.  
+The model is tensor‑parallelised over **3 A100 GPUs** (IDs 1, 2, 3), each allowed to consume **90 %** of its memory, leaving ~10 % headroom for driver overhead and system processes.
 
 ## 2 – Interact with the API
 
