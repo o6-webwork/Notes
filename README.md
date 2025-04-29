@@ -103,7 +103,7 @@ services:
         runtime: nvidia
         ipc: host
         volumes:
-         - /home/dsta/Desktop/mistralai/Mistral-7B-Instruct-v0.1:/mnt/model/
+         - /home/dsta/mistralai/Mistral-7B-Instruct-v0.1:/mnt/model/
          - /home/dsta/.cache/hugging-face:/root/.cache/huggingface
         ports:
          - "8000:8000"
