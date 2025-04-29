@@ -87,7 +87,7 @@ services:
 | `<container-name>` | Name of Docker container |
 | `<model-directory-path-on-dgx>` | The file path of your model on the machine's directory |
 | `<host-port>` | The port where the model will be locally hosted on |
-| `<devices-used>` | Number of GPUs used (eg. 0,1,2) |
+| `<devices-used>` | Number of GPUs used, eg. `0,1,2` |
 | `<max-model-len>` | The maximum number of tokens the model inputs and outputs |
 | `<gpu-mem-utilization>` | Proportion of GPU usage |
 
