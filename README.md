@@ -55,7 +55,7 @@ export GPU_MEM_UTIL=0.90
 docker run -d   --gpus all   --name $CONTAINER_NAME   -v ~/.cache/huggingface:/root/.cache/huggingface   -p $HOST_PORT:8000   --ipc=host   vllm/vllm-openai:latest   --model $MODEL_ID   --max-model-len $MAX_LEN   --gpu-memory-utilization $GPU_MEM_UTIL
 ```
 
-### Using Docker Compose
+### Using Docker Compose (*`docker-compose.yml`*)
 
 ```
 version: "3.8"
@@ -77,6 +77,42 @@ services:
          "--model", "/mnt/model/",
          "--max-model-len", "<max-model-len>"
          "--gpu-memory-utilization", "<gpu-mem-utilization>",
+        ]
+```
+
+**Change elements in docker-compose** 
+
+| Elements to be changed | Purpose |
+|------------------------|---------|
+| `<container-name>` | Name of Docker container |
+| `<model-directory-path-on-dgx>` | The file path of your model on the machine's directory |
+| `<host-port>` | The port where the model will be locally hosted on |
+| `<devices-used>` | Number of GPUs used (eg. 0,1,2) |
+| `<max-model-len>` | The maximum number of tokens the model inputs and outputs |
+| `<gpu-mem-utilization>` | Proportion of GPU usage |
+
+### Concrete example
+
+```
+version: "3.8"
+
+services:
+    vllm:
+        container_name: <vllm-qwq>
+        image: vllm/vllm-openai:latest
+        runtime: nvidia
+        ipc: host
+        volumes:
+         - /home/dsta/Desktop/QwQ-32B:/mnt/model/
+         - /home/dsta/.cache/hugging-face:/root/.cache/huggingface
+        ports:
+         - "1999:8000"
+        environment:
+         - NVIDIA_VISIBLE_DEVICES=1,2,3
+        command: [
+         "--model", "/mnt/model/",
+         "--max-model-len", "16000"
+         "--gpu-memory-utilization", "0.9",
         ]
 ```
 
