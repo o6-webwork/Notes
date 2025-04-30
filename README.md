@@ -36,7 +36,6 @@ docker run   --gpus all   --name <container_name>   -v ~/.cache/huggingface:/roo
 | Flag | Purpose |
 |------|---------|
 | `--gpus all` | Expose all GPUs (or `--gpus '"device=0,1"'` for specific IDs) |
-| `-v ~/.cache/huggingface:/root/.cache/huggingface` | Re‑use host model cache |
 | `-p <host_port>:8000` | Map container’s port 8000 to host |
 | `--ipc=host` | Better performance with multi‑GPU |
 | `--model` | Hugging Face model ID, e.g. `mistralai/Mistral-7B-Instruct-v0.1` |
