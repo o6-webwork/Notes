@@ -64,8 +64,7 @@ services:
     runtime: nvidia
     ipc: host
     volumes:
-      - <model-directory-path-on-dgx>:/mnt/model/
-      - /home/dsta/.cache/hugging-face:/root/.cache/huggingface
+      - <model-path>:/mnt/model/
     ports:
       - "<host-port>:8000"
     environment:
@@ -130,8 +129,7 @@ services:
     runtime: nvidia
     ipc: host
     volumes:
-      - /home/otb/Desktop/QwQ-32B:/mnt/model/
-      - /home/otb/.cache/hugging-face:/root/.cache/huggingface
+      - ./QwQ-32B:/mnt/model/
     ports:
       - "1999:8000"
     environment:
@@ -145,7 +143,7 @@ services:
     ]
 ```
 
-In this setup, a **32‑billion‑parameter model** stored at `/home/otb/Desktop/QwQ-32B` is served locally on **http://localhost:1999**.  
+In this setup, a **32‑billion‑parameter model** stored at `QwQ-32B` is served locally on **http://localhost:1999**.  
 The model is tensor‑parallelised over **3 A100 GPUs** (IDs 1, 2, 3), each allowed to consume **90 %** of its memory, leaving ~10 % headroom for driver overhead and system processes.
 
 ## 2 – Interact with the API
